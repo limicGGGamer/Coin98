@@ -10,7 +10,7 @@ export class BattleRoom extends Room<MyRoomState> {
 
     async onCreate(options: any) {
         this.lock();
-        this.setPatchRate(25);
+        this.setPatchRate(10);
         this.setState(new MyRoomState());
         console.log("onCreate BattleRoom id: ", this.roomId);
 
@@ -35,7 +35,19 @@ export class BattleRoom extends Room<MyRoomState> {
                     break;
                 case "game-started":
                     this.startedAt = Date.now();
-                    this.broadcast('gameScene', { result: 1, data: message });
+
+                    let players: any = [];
+                    
+                    this.state.players.forEach((player) => {
+                        const p = {
+                            playerId: player.playerId,
+                            shortWalletId: player.shortWalletId
+                        }
+
+                        players.push(p);
+                    })
+
+                    this.broadcast('gameScene', { result: 1, data: {players: players} });
                     try {
                         await matchMaker.remoteRoomCall(this.remoteRoomId, "closeRoom", [{ roomId: this.roomId }]);
                     } catch (error) {

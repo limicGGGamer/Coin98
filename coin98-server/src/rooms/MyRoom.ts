@@ -4,7 +4,7 @@ import { userinfo, transferWallet, getGamePass, payGamePass, gameStart } from ".
 import { syncTicket, userme } from "../thirdparties/DynamodbAPI";
 
 export class MyRoom extends Room<MyRoomState> {
-  maxClients = 2;
+  maxClients = 1;
 
   public delayedInterval!: Delayed;
   battleRoom: any;
