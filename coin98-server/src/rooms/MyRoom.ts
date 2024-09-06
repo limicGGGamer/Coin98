@@ -124,8 +124,6 @@ export class MyRoom extends Room<MyRoomState> {
     const player = this.state.createPlayer(client.sessionId, options?.player, this.state.players.size, options?.player?.uid, "queue", options?.player?.walletId, (client as any)?.ticket, (client as any)?.passCred);
     console.log("this.state.players.size: ", this.state.players.size);
 
-    
-    let canStartGame = this.state.players.size == this.maxClients;
 
     if (this.state.players.size === this.maxClients) {
       this.lock();
