@@ -10,18 +10,18 @@ export class BattleRoom extends Room<MyRoomState> {
 
     async onCreate(options: any) {
         this.lock();
-        this.setPatchRate(10);
+        this.setPatchRate(34);
         this.setState(new MyRoomState());
         console.log("onCreate BattleRoom id: ", this.roomId);
 
         this.onMessage("*", async (client, type, message) => {
             switch (type) {
                 case "game-input":
-                    console.log("game-input message:", message);
+                    // console.log("game-input message:", message);
                     this.broadcast('game-event', { event: 'game-input', data: message });
                     break;
                 case "update-player":
-                    console.log("update-player message:", message);
+                    // console.log("update-player message:", message);
 
                     this.state.players.forEach((player) => {
                         if (player.playerId == message.playerId) {
@@ -37,7 +37,7 @@ export class BattleRoom extends Room<MyRoomState> {
                     this.startedAt = Date.now();
 
                     let players: any = [];
-                    
+
                     this.state.players.forEach((player) => {
                         const p = {
                             playerId: player.playerId,
@@ -47,7 +47,7 @@ export class BattleRoom extends Room<MyRoomState> {
                         players.push(p);
                     })
 
-                    this.broadcast('gameScene', { result: 1, data: {players: players} });
+                    this.broadcast('gameScene', { result: 1, data: { players: players } });
                     try {
                         await matchMaker.remoteRoomCall(this.remoteRoomId, "closeRoom", [{ roomId: this.roomId }]);
                     } catch (error) {
@@ -92,6 +92,11 @@ export class BattleRoom extends Room<MyRoomState> {
                 case "collide-block":
                     this.broadcast('game-event', { event: 'collide-block', data: message.data });
 
+                    break;
+                case "ping":
+                    // Respond with a "pong" message containing the same timestamp
+                    console.log("ping:", message);
+                    client.send("pong", { data: message });
                     break;
 
             }
