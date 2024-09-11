@@ -3,7 +3,7 @@ import { MyRoomState } from "./schema/MyRoomState";
 import { syncTicket } from "../thirdparties/DynamodbAPI";
 
 export class BattleRoom extends Room<MyRoomState> {
-    maxClients = 3;
+    maxClients = 4;
     startedAt = 0;
     remoteRoomId: string = "";
     isGameover = false;
@@ -69,17 +69,17 @@ export class BattleRoom extends Room<MyRoomState> {
                     this.broadcast('game-event', { event: 'player-ready', data: message });
                     break;
                 case "go-to-game":
-
+                    console.log("go-to-game:", message);
                     this.broadcast('game-event', { event: 'go-to-game', data: message.data });
                     break;
                 case "create-block":
 
-                    console.log("create-block:", message);
+                    // console.log("create-block:", message);
                     this.state.createBlock(message.id, message.frame, message.posX, message.posY);
 
                     break;
                 case "destroy-block":
-                    this.broadcast('game-event', { event: 'destroy-block', data: message.data });
+                    this.broadcast('game-event', { event: 'destroy-block', data: message });
                     this.state.blocks.delete(message.id);
 
                     break;
@@ -90,15 +90,19 @@ export class BattleRoom extends Room<MyRoomState> {
 
                     break;
                 case "collide-block":
-                    this.broadcast('game-event', { event: 'collide-block', data: message.data });
+                    console.log("collide-block:", message);
+                    this.broadcast('game-event', { event: 'collide-block', data: message });
 
                     break;
                 case "ping":
                     // Respond with a "pong" message containing the same timestamp
-                    console.log("ping:", message);
+                    // console.log("ping:", message);
                     client.send("pong", { data: message });
                     break;
-
+                case "counting-waiting-player-time":
+                    console.log("counting-waiting-player-time:", message);
+                    this.broadcast('game-event', { event: 'counting-waiting-player-time', data: message });
+                    break;
             }
         })
 

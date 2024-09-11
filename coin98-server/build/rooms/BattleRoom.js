@@ -7,7 +7,7 @@ const DynamodbAPI_1 = require("../thirdparties/DynamodbAPI");
 class BattleRoom extends core_1.Room {
     constructor() {
         super(...arguments);
-        this.maxClients = 3;
+        this.maxClients = 4;
         this.startedAt = 0;
         this.remoteRoomId = "";
         this.isGameover = false;
@@ -68,11 +68,11 @@ class BattleRoom extends core_1.Room {
                     this.broadcast('game-event', { event: 'go-to-game', data: message.data });
                     break;
                 case "create-block":
-                    console.log("create-block:", message);
+                    // console.log("create-block:", message);
                     this.state.createBlock(message.id, message.frame, message.posX, message.posY);
                     break;
                 case "destroy-block":
-                    this.broadcast('game-event', { event: 'destroy-block', data: message.data });
+                    this.broadcast('game-event', { event: 'destroy-block', data: message });
                     this.state.blocks.delete(message.id);
                     break;
                 case "update-block":
@@ -81,12 +81,17 @@ class BattleRoom extends core_1.Room {
                     block.posY = message.posY;
                     break;
                 case "collide-block":
-                    this.broadcast('game-event', { event: 'collide-block', data: message.data });
+                    console.log("collide-block:", message);
+                    this.broadcast('game-event', { event: 'collide-block', data: message });
                     break;
                 case "ping":
                     // Respond with a "pong" message containing the same timestamp
-                    console.log("ping:", message);
+                    // console.log("ping:", message);
                     client.send("pong", { data: message });
+                    break;
+                case "counting-waiting-player-time":
+                    console.log("counting-waiting-player-time:", message);
+                    this.broadcast('game-event', { event: 'counting-waiting-player-time', data: message });
                     break;
             }
         });

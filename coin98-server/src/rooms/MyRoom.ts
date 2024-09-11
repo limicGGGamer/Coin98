@@ -4,7 +4,7 @@ import { userinfo, transferWallet, getGamePass, payGamePass, gameStart } from ".
 import { syncTicket, userme } from "../thirdparties/DynamodbAPI";
 
 export class MyRoom extends Room<MyRoomState> {
-  maxClients = 2;
+  maxClients = 3;
 
   public delayedInterval!: Delayed;
   battleRoom: any;
@@ -121,24 +121,24 @@ export class MyRoom extends Room<MyRoomState> {
 
     console.log("onJoin options: ", options);
     
-    let shouldContinue = true;
-    this.state.players.forEach((player, sessionId) => {
-        if (options?.player?.uid == player.userId) {
-            console.log(`Queue room ${this.roomId} player ${player.userId} exist, sessionId: ${sessionId}.`);
-            try {
-                this.state.players.delete(client.sessionId);
-                console.log(`create-new-room player ${player.userId}`);
-                client.send("create-new-room", {});
-            }
-            catch (e) {
-                console.log(`Queue room ${this.roomId} remove old player ${player.userId} failed.`);
-            }
-            shouldContinue = false;
-            return false;
-        }
-    });
-    if (!shouldContinue)
-        return false;
+    // let shouldContinue = true;
+    // this.state.players.forEach((player, sessionId) => {
+    //     if (options?.player?.uid == player.userId) {
+    //         console.log(`Queue room ${this.roomId} player ${player.userId} exist, sessionId: ${sessionId}.`);
+    //         try {
+    //             this.state.players.delete(client.sessionId);
+    //             console.log(`create-new-room player ${player.userId}`);
+    //             client.send("create-new-room", {});
+    //         }
+    //         catch (e) {
+    //             console.log(`Queue room ${this.roomId} remove old player ${player.userId} failed.`);
+    //         }
+    //         shouldContinue = false;
+    //         return false;
+    //     }
+    // });
+    // if (!shouldContinue)
+    //     return false;
 
     const player = this.state.createPlayer(client.sessionId, options?.player, this.state.players.size, options?.player?.uid, "queue", options?.player?.walletId, (client as any)?.ticket, (client as any)?.passCred);
     console.log("this.state.players.size: ", this.state.players.size);

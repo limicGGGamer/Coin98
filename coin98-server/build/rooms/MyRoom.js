@@ -8,7 +8,7 @@ const DynamodbAPI_1 = require("../thirdparties/DynamodbAPI");
 class MyRoom extends core_1.Room {
     constructor() {
         super(...arguments);
-        this.maxClients = 2;
+        this.maxClients = 3;
     }
     onCreate(options) {
         this.setState(new MyRoomState_1.MyRoomState());
@@ -95,24 +95,24 @@ class MyRoom extends core_1.Room {
     async onJoin(client, options) {
         console.log("queue room on join reconnect token:", this.roomId + ":" + client?._reconnectionToken);
         console.log("onJoin options: ", options);
-        let shouldContinue = true;
-        this.state.players.forEach((player, sessionId) => {
-            if (options?.player?.uid == player.userId) {
-                console.log(`Queue room ${this.roomId} player ${player.userId} exist, sessionId: ${sessionId}.`);
-                try {
-                    this.state.players.delete(client.sessionId);
-                    console.log(`create-new-room player ${player.userId}`);
-                    client.send("create-new-room", {});
-                }
-                catch (e) {
-                    console.log(`Queue room ${this.roomId} remove old player ${player.userId} failed.`);
-                }
-                shouldContinue = false;
-                return false;
-            }
-        });
-        if (!shouldContinue)
-            return false;
+        // let shouldContinue = true;
+        // this.state.players.forEach((player, sessionId) => {
+        //     if (options?.player?.uid == player.userId) {
+        //         console.log(`Queue room ${this.roomId} player ${player.userId} exist, sessionId: ${sessionId}.`);
+        //         try {
+        //             this.state.players.delete(client.sessionId);
+        //             console.log(`create-new-room player ${player.userId}`);
+        //             client.send("create-new-room", {});
+        //         }
+        //         catch (e) {
+        //             console.log(`Queue room ${this.roomId} remove old player ${player.userId} failed.`);
+        //         }
+        //         shouldContinue = false;
+        //         return false;
+        //     }
+        // });
+        // if (!shouldContinue)
+        //     return false;
         const player = this.state.createPlayer(client.sessionId, options?.player, this.state.players.size, options?.player?.uid, "queue", options?.player?.walletId, client?.ticket, client?.passCred);
         console.log("this.state.players.size: ", this.state.players.size);
         if (this.state.players.size === this.maxClients) {
