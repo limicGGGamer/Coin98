@@ -8,6 +8,7 @@ export class MyRoomState extends Schema {
   @type("boolean") waitingForServer = false;
   @type({ map: Player }) players = new MapSchema<Player>();
   @type({ map: Block }) blocks = new MapSchema<Block>();
+  @type("number") timeCounter = 0;
 
   createPlayer(sessionId: string, props: any, playerId: any, userId: string, state: string, walletId: string, ticket: string, passCred: string) {
     console.log('createPlayer sessionId :', sessionId, '    playerId; ', playerId, '    walletId: ', walletId ? walletId : "");

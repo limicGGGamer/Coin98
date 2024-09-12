@@ -4,12 +4,17 @@ import { userinfo, transferWallet, getGamePass, payGamePass, gameStart } from ".
 import { syncTicket, userme } from "../thirdparties/DynamodbAPI";
 
 export class MyRoom extends Room<MyRoomState> {
-  maxClients = 3;
+  maxClients = 4;
 
   public delayedInterval!: Delayed;
   battleRoom: any;
 
-  onCreate (options: any) {
+  private waitingPlayerTime: number = 10;
+  private roomStartTime: number;
+  private isCountingTime: boolean;
+  private timeInterval!: Delayed;
+
+  onCreate(options: any) {
     this.setState(new MyRoomState());
 
     this.onMessage("type", (client, message) => {
@@ -31,7 +36,7 @@ export class MyRoom extends Room<MyRoomState> {
         throw new Error("Token not exists")
       }
 
-      console.log("onAuth options: ",options);
+      console.log("onAuth options: ", options);
 
       const payload = await userinfo(options.accessToken);
       // console.log("onAuth payload: ",payload);
@@ -116,11 +121,11 @@ export class MyRoom extends Room<MyRoomState> {
     }
   }
 
-  async onJoin (client: Client, options: any) {
+  async onJoin(client: Client, options: any) {
     console.log("queue room on join reconnect token:", this.roomId + ":" + client?._reconnectionToken);
 
     console.log("onJoin options: ", options);
-    
+
     // let shouldContinue = true;
     // this.state.players.forEach((player, sessionId) => {
     //     if (options?.player?.uid == player.userId) {
@@ -143,9 +148,95 @@ export class MyRoom extends Room<MyRoomState> {
     const player = this.state.createPlayer(client.sessionId, options?.player, this.state.players.size, options?.player?.uid, "queue", options?.player?.walletId, (client as any)?.ticket, (client as any)?.passCred);
     console.log("this.state.players.size: ", this.state.players.size);
 
+    const canStartGame = this.state.players.size == this.maxClients;
+    this.startBattleRoomSearch(canStartGame);
 
-    if (this.state.players.size === this.maxClients) {
-      this.lock();
+
+    if (this.state.players.size > 1) {
+      if (!this.isCountingTime)
+        this.roomStartTime = Date.now();
+
+      this.isCountingTime = true;
+      this.CountingTime();
+    }
+    // if (this.state.players.size === this.maxClients) {
+    //   this.lock();
+
+    //   this.delayedInterval = this.clock.setInterval(async () => {          //send room length to clients
+
+    //     const battleRoom = await matchMaker.findOneRoomAvailable("battleRoom", { mode: 'autogame' });
+
+    //     console.log("have battleRoom: ", battleRoom);
+    //     if (battleRoom) {
+
+    //       this.battleRoom = battleRoom;
+
+
+    //       let players: any = [];
+    //       this.state.players.forEach(async (player) => {
+    //         players[players?.length] = { ...player, player: player };
+
+    //         const client = this.clients.getById(player.sessionId);
+    //         console.log("player.playerId; ", player.playerId);
+    //         const options = { accessToken: player?.accessToken, sessionId: player?.sessionId, walletId: (player as any)?.walletId, userId: (player as any)?.uid, ticket: player?.ticket, passCred: player?.passCred, playerId: player.playerId };
+
+    //         if (client) {
+    //           client.send("get-my-sessionId", { data: player?.sessionId });
+    //           const matchData = await matchMaker.reserveSeatFor(this.battleRoom, options);
+    //           client.send("reserveSeatFor", { data: matchData });
+    //           player.reserveSeat = true;
+    //         }
+    //       });
+
+    //       console.log("battle-room-id");
+    //       this.broadcast("battle-room-id", {});
+    //       const payload = await matchMaker.remoteRoomCall(battleRoom.roomId, "setPlayer", [{ roomId: this.roomId, player: players }]);
+    //       if (payload) {
+    //         this.broadcast("game-event", {
+    //           state: "game-join",
+    //           message: "Connecting to server"
+    //         });
+    //       }
+
+    //       this.delayedInterval.clear();
+    //     }
+    //   }, 2000);
+
+    //   this.state.waitingForServer = true;
+    // }
+  }
+
+  private CountingTime() {// Set the room start time
+
+    // Create an interval to update the time counter
+    this.timeInterval = this.clock.setInterval(() => {
+      const currentTime = Date.now();
+      const elapsedTime = Math.floor((currentTime - this.roomStartTime) / 1000); // Convert to seconds
+      this.state.timeCounter = elapsedTime;
+
+      console.log("My Room CountingTime: ", this.state.timeCounter);
+
+      let timerCounter = this.waitingPlayerTime - elapsedTime;
+      if(timerCounter < 0)
+        timerCounter = 0;
+      // Optionally, broadcast the time to all clients
+      this.broadcast("counting-waiting-player-time", { timeCounter: timerCounter });
+
+      // Check if 2 minutes have passed
+      if (this.state.timeCounter >= this.waitingPlayerTime && !this.state.waitingForServer && this.state.players.size >= 2) {
+        this.lock();
+        this.startBattleRoomSearch(true);
+        this.broadcast("counting-waiting-player-time", { timeCounter: 0 });
+        this.timeInterval.clear();
+      }
+
+    }, 1000); // Update every second
+  }
+
+  private startBattleRoomSearch(canStartGame: boolean) {
+
+    // When room is full
+    if (canStartGame) {
 
       this.delayedInterval = this.clock.setInterval(async () => {          //send room length to clients
 
@@ -153,6 +244,7 @@ export class MyRoom extends Room<MyRoomState> {
 
         console.log("have battleRoom: ", battleRoom);
         if (battleRoom) {
+          this.lock();
 
           this.battleRoom = battleRoom;
 
@@ -188,10 +280,12 @@ export class MyRoom extends Room<MyRoomState> {
       }, 2000);
 
       this.state.waitingForServer = true;
+    } else {
+      this.unlock();
     }
   }
 
-  onLeave (client: Client, consented: boolean) {
+  onLeave(client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
   }
 
@@ -200,13 +294,14 @@ export class MyRoom extends Room<MyRoomState> {
   }
 
   closeRoom() {
-    this.broadcast("game-event", {
-      state: "game-joined",
-      message: "Connecting to server"
-    });
-    setTimeout(() => {
-      this.disconnect();
-    }, 5000);
+    // this.broadcast("game-event", {
+    //   state: "game-joined",
+    //   message: "Connecting to server"
+    // });
+    // setTimeout(() => {
+    //   this.disconnect();
+    // }, 5000);
+    this.disconnect();
   }
 
 }

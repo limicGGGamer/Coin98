@@ -16,6 +16,7 @@ class MyRoomState extends schema_1.Schema {
         this.waitingForServer = false;
         this.players = new schema_1.MapSchema();
         this.blocks = new schema_1.MapSchema();
+        this.timeCounter = 0;
     }
     createPlayer(sessionId, props, playerId, userId, state, walletId, ticket, passCred) {
         console.log('createPlayer sessionId :', sessionId, '    playerId; ', playerId, '    walletId: ', walletId ? walletId : "");
@@ -55,3 +56,6 @@ __decorate([
 __decorate([
     (0, schema_1.type)({ map: Block_1.Block })
 ], MyRoomState.prototype, "blocks", void 0);
+__decorate([
+    (0, schema_1.type)("number")
+], MyRoomState.prototype, "timeCounter", void 0);

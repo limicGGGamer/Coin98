@@ -65,6 +65,7 @@ class BattleRoom extends core_1.Room {
                     this.broadcast('game-event', { event: 'player-ready', data: message });
                     break;
                 case "go-to-game":
+                    console.log("go-to-game:", message);
                     this.broadcast('game-event', { event: 'go-to-game', data: message.data });
                     break;
                 case "create-block":
@@ -81,7 +82,7 @@ class BattleRoom extends core_1.Room {
                     block.posY = message.posY;
                     break;
                 case "collide-block":
-                    console.log("collide-block:", message);
+                    // console.log("collide-block:", message);
                     this.broadcast('game-event', { event: 'collide-block', data: message });
                     break;
                 case "ping":
@@ -89,9 +90,13 @@ class BattleRoom extends core_1.Room {
                     // console.log("ping:", message);
                     client.send("pong", { data: message });
                     break;
-                case "counting-waiting-player-time":
-                    console.log("counting-waiting-player-time:", message);
-                    this.broadcast('game-event', { event: 'counting-waiting-player-time', data: message });
+                // case "counting-waiting-player-time":
+                //     // console.log("counting-waiting-player-time:", message);
+                //     this.broadcast('game-event', { event: 'counting-waiting-player-time', data: message });
+                //     break;
+                case "player-ready-counter":
+                    // console.log("player-ready-counter:", message);
+                    this.broadcast('game-event', { event: 'player-ready-counter', data: message });
                     break;
             }
         });
