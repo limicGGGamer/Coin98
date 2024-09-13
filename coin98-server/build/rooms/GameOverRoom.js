@@ -38,7 +38,7 @@ class GameOverRoom extends core_1.Room {
                 "userId": player?.userId,
                 "ticket_id": player?.gameSessionId,
                 "state": "gameover",
-                "game_id": "baycSoccer",
+                "game_id": "FlappyHero",
                 "reconnectToken": "N/A"
             };
             const syncTicketPayload = await (0, DynamodbAPI_1.syncTicket)(tokens[i], JSON.stringify(syncTicketData));

@@ -36,7 +36,7 @@ export class MyRoom extends Room<MyRoomState> {
         throw new Error("Token not exists")
       }
 
-      console.log("onAuth options: ", options);
+      console.log("onAuth options: ", options.data);
 
       const payload = await userinfo(options.accessToken);
       // console.log("onAuth payload: ",payload);
@@ -94,7 +94,7 @@ export class MyRoom extends Room<MyRoomState> {
         "userId": options?.player?.uid,
         "ticket_id": ticket as string,
         "state": "NEW",
-        "game_id": "ElfinGolf",
+        "game_id": "FlappyHero",
         "reconnectToken": this.roomId + ":" + client?._reconnectionToken
       }
 

@@ -132,7 +132,7 @@ export class BattleRoom extends Room<MyRoomState> {
                 "userId": options?.userId,
                 "ticket_id": options?.ticket,
                 "state": "battle",
-                "game_id": "ElfinGolf",
+                "game_id": "FlappyHero",
                 "reconnectToken": this.roomId + ":" + client?._reconnectionToken
             }
 

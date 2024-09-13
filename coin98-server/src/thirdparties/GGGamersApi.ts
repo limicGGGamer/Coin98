@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// axios.defaults.baseURL = 'https://api.elfin.games';
-axios.defaults.baseURL = 'https://api-testnet.elfin.games';
+axios.defaults.baseURL = 'https://api.elfin.games';
+// axios.defaults.baseURL = 'https://api-testnet.elfin.games';
 axios.defaults.headers.common['InvocationType'] = "Event";
 
 const token = process.env.ENCRYPT_KEY;

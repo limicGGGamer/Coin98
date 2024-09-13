@@ -29,7 +29,7 @@ class MyRoom extends core_1.Room {
             if (!options?.accessToken) {
                 throw new Error("Token not exists");
             }
-            console.log("onAuth options: ", options);
+            console.log("onAuth options: ", options.data);
             const payload = await (0, GGGamersApi_1.userinfo)(options.accessToken);
             // console.log("onAuth payload: ",payload);
             options.player.accessToken = options.accessToken;
@@ -72,7 +72,7 @@ class MyRoom extends core_1.Room {
                 "userId": options?.player?.uid,
                 "ticket_id": ticket,
                 "state": "NEW",
-                "game_id": "ElfinGolf",
+                "game_id": "FlappyHero",
                 "reconnectToken": this.roomId + ":" + client?._reconnectionToken
             };
             const syncTicketPayload = await (0, DynamodbAPI_1.syncTicket)(options.accessToken, JSON.stringify(syncTicketData));
