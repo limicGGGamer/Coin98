@@ -16,7 +16,7 @@ async function syncTicket(auth_token, _data) {
             Authorization: `Bearer ${auth_token}`,
         },
     };
-    //console.log("syncTicket:", _data);
+    // console.log("syncTicket:", _data);
     return axios_1.default.post(domain + "/sync-ticket", _data, config).catch(resp => ({ ...resp.response, error: resp.response.data?.message || 'Error found!' }));
 }
 async function userme(auth_token) {

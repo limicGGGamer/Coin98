@@ -10,7 +10,7 @@ export async function syncTicket(auth_token: string, _data: string) {
       Authorization: `Bearer ${auth_token}`,
     },
   };
-  //console.log("syncTicket:", _data);
+  // console.log("syncTicket:", _data);
   return axios.post(domain+"/sync-ticket", _data, config).catch(resp => ({ ...resp.response, error: resp.response.data?.message || 'Error found!' }));
 }
 export async function userme(auth_token: string) {

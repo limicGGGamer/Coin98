@@ -13,10 +13,38 @@ class MyRoom extends core_1.Room {
     }
     onCreate(options) {
         this.setState(new MyRoomState_1.MyRoomState());
-        this.onMessage("type", (client, message) => {
-            //
-            // handle "type" message
-            //
+        this.onMessage("*", async (client, type, message) => {
+            switch (type) {
+                case "player-state":
+                    if (message?.type === "getLatestState") {
+                        const player = this.state.players.get(client.sessionId);
+                        player.accessToken = message?.data?.accessToken;
+                        if (this?.battleRoom) {
+                            const options = { accessToken: player?.accessToken, sessionId: player?.sessionId, walletId: player?.walletId, userId: player?.uid, ticket: player?.ticket, passCred: player?.passCred, playerId: player.playerId };
+                            const matchData = await core_1.matchMaker.reserveSeatFor(this?.battleRoom, options);
+                            if (matchData && !player.reserveSeat) {
+                                client.send("reserveSeatFor", { data: matchData });
+                                player.reserveSeat = true;
+                                client.send("game-event", {
+                                    state: "game-connecting",
+                                    message: "Connecting to server"
+                                });
+                            }
+                        }
+                        const syncTicketData = {
+                            "userId": message?.data?.userId,
+                            "ticket_id": player?.ticket,
+                            "state": "queue",
+                            "game_id": "FlappyHero",
+                            "reconnectToken": this.roomId + ":" + client?._reconnectionToken
+                        };
+                        console.log("battle reconnection check:", syncTicketData);
+                        const syncTicketPayload = await (0, DynamodbAPI_1.syncTicket)(message?.data?.accessToken, JSON.stringify(syncTicketData));
+                        //client.send('game-event', { state: 'game-play', result: 1, data: message });
+                        console.log("reconnection Sync Ticket:", syncTicketPayload.data);
+                    }
+                    break;
+            }
         });
     }
     async onAuth(client, options, request) {
@@ -78,7 +106,7 @@ class MyRoom extends core_1.Room {
             const syncTicketPayload = await (0, DynamodbAPI_1.syncTicket)(options.accessToken, JSON.stringify(syncTicketData));
             if (syncTicketPayload.data.result !== 1)
                 throw new Error("Sync Ticket Error.");
-            //console.log('Sync Ticket successful:', syncTicketPayload.data);
+            // console.log('Sync Ticket successful:', syncTicketPayload.data);
             // redeem ticket
             const gameStartPayload = await (0, GGGamersApi_1.gameStart)(options.accessToken, ticket);
             //console.log("gameStartPayload:", gameStartPayload.data);
@@ -96,24 +124,32 @@ class MyRoom extends core_1.Room {
     async onJoin(client, options) {
         console.log("queue room on join reconnect token:", this.roomId + ":" + client?._reconnectionToken);
         console.log("onJoin options: ", options);
-        // let shouldContinue = true;
-        // this.state.players.forEach((player, sessionId) => {
-        //     if (options?.player?.uid == player.userId) {
-        //         console.log(`Queue room ${this.roomId} player ${player.userId} exist, sessionId: ${sessionId}.`);
-        //         try {
-        //             this.state.players.delete(client.sessionId);
-        //             console.log(`create-new-room player ${player.userId}`);
-        //             client.send("create-new-room", {});
-        //         }
-        //         catch (e) {
-        //             console.log(`Queue room ${this.roomId} remove old player ${player.userId} failed.`);
-        //         }
-        //         shouldContinue = false;
-        //         return false;
-        //     }
-        // });
-        // if (!shouldContinue)
-        //     return false;
+        let shouldContinue = true;
+        this.state.players.forEach((player, sessionId) => {
+            if (options?.player?.uid == player.userId) {
+                console.log(`Queue room ${this.roomId} player ${player.userId} exist, sessionId: ${sessionId}.`);
+                try {
+                    this.state.players.delete(client.sessionId);
+                    console.log(`create-new-room player ${player.userId}`);
+                    client.send("create-new-room", {});
+                }
+                catch (e) {
+                    console.log(`Queue room ${this.roomId} remove old player ${player.userId} failed.`);
+                }
+                shouldContinue = false;
+                return false;
+            }
+        });
+        if (!shouldContinue)
+            return false;
+        const syncTicketData = {
+            "userId": options?.player?.uid,
+            "ticket_id": client?.ticket,
+            "state": "queue",
+            "game_id": "FlappyHero",
+            "reconnectToken": this.roomId + ":" + client?._reconnectionToken
+        };
+        const syncTicketPayload = await (0, DynamodbAPI_1.syncTicket)(options?.player?.accessToken, JSON.stringify(syncTicketData));
         const player = this.state.createPlayer(client.sessionId, options?.player, this.state.players.size, options?.player?.uid, "queue", options?.player?.walletId, client?.ticket, client?.passCred);
         console.log("this.state.players.size: ", this.state.players.size);
         const canStartGame = this.state.players.size == this.maxClients;
@@ -220,8 +256,28 @@ class MyRoom extends core_1.Room {
             this.unlock();
         }
     }
-    onLeave(client, consented) {
-        console.log(client.sessionId, "left!");
+    async onLeave(client, consented) {
+        this.state.players.get(client.sessionId).connected = false;
+        try {
+            if (consented) {
+                throw new Error("consented leave");
+            }
+            const reconnection = this.allowReconnection(client, "manual");
+            // now it's time to `await` for the reconnection
+            await reconnection;
+            // client returned! let's re-activate it.
+            this.state.players.get(client.sessionId).connected = true;
+            const promise = await reconnection.promise;
+            console.log("queue room reconnection token:", promise._reconnectionToken);
+            //sync ticket
+        }
+        catch (e) {
+            //console.log("error:",e);
+            console.log(`Queue room ${this.roomId} reconnection has been rejected. remove the client...`);
+            // reconnection has been rejected. let's remove the client.
+            this.state.players.delete(client.sessionId);
+            this.unlock();
+        }
     }
     onDispose() {
         console.log("room", this.roomId, "disposing...");
