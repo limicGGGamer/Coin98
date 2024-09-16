@@ -7,7 +7,7 @@ const DynamodbAPI_1 = require("../thirdparties/DynamodbAPI");
 class BattleRoom extends core_1.Room {
     constructor() {
         super(...arguments);
-        this.maxClients = 4;
+        this.maxClients = 5;
         this.startedAt = 0;
         this.remoteRoomId = "";
         this.isGameover = false;
@@ -97,6 +97,11 @@ class BattleRoom extends core_1.Room {
                 case "player-ready-counter":
                     // console.log("player-ready-counter:", message);
                     this.broadcast('game-event', { event: 'player-ready-counter', data: message });
+                    break;
+                case "game-timeout":
+                    console.log("Battle room waiting player timeout:", this.roomId);
+                    await core_1.matchMaker.remoteRoomCall(this.remoteRoomId, "closeRoom", [{ roomId: this.roomId }]);
+                    this.disconnect();
                     break;
             }
         });
