@@ -57,7 +57,7 @@ class MyRoom extends core_1.Room {
             if (!options?.accessToken) {
                 throw new Error("Token not exists");
             }
-            console.log("onAuth options: ", options.data);
+            // console.log("onAuth options: ", options.data);
             const payload = await (0, GGGamersApi_1.userinfo)(options.accessToken);
             // console.log("onAuth payload: ",payload);
             options.player.accessToken = options.accessToken;
@@ -160,40 +160,6 @@ class MyRoom extends core_1.Room {
             this.isCountingTime = true;
             this.CountingTime();
         }
-        // if (this.state.players.size === this.maxClients) {
-        //   this.lock();
-        //   this.delayedInterval = this.clock.setInterval(async () => {          //send room length to clients
-        //     const battleRoom = await matchMaker.findOneRoomAvailable("battleRoom", { mode: 'autogame' });
-        //     console.log("have battleRoom: ", battleRoom);
-        //     if (battleRoom) {
-        //       this.battleRoom = battleRoom;
-        //       let players: any = [];
-        //       this.state.players.forEach(async (player) => {
-        //         players[players?.length] = { ...player, player: player };
-        //         const client = this.clients.getById(player.sessionId);
-        //         console.log("player.playerId; ", player.playerId);
-        //         const options = { accessToken: player?.accessToken, sessionId: player?.sessionId, walletId: (player as any)?.walletId, userId: (player as any)?.uid, ticket: player?.ticket, passCred: player?.passCred, playerId: player.playerId };
-        //         if (client) {
-        //           client.send("get-my-sessionId", { data: player?.sessionId });
-        //           const matchData = await matchMaker.reserveSeatFor(this.battleRoom, options);
-        //           client.send("reserveSeatFor", { data: matchData });
-        //           player.reserveSeat = true;
-        //         }
-        //       });
-        //       console.log("battle-room-id");
-        //       this.broadcast("battle-room-id", {});
-        //       const payload = await matchMaker.remoteRoomCall(battleRoom.roomId, "setPlayer", [{ roomId: this.roomId, player: players }]);
-        //       if (payload) {
-        //         this.broadcast("game-event", {
-        //           state: "game-join",
-        //           message: "Connecting to server"
-        //         });
-        //       }
-        //       this.delayedInterval.clear();
-        //     }
-        //   }, 2000);
-        //   this.state.waitingForServer = true;
-        // }
     }
     CountingTime() {
         // Create an interval to update the time counter
@@ -201,7 +167,7 @@ class MyRoom extends core_1.Room {
             const currentTime = Date.now();
             const elapsedTime = Math.floor((currentTime - this.roomStartTime) / 1000); // Convert to seconds
             this.state.timeCounter = elapsedTime;
-            console.log("My Room CountingTime: ", this.state.timeCounter);
+            // console.log("My Room CountingTime: ", this.state.timeCounter);
             let timerCounter = this.waitingPlayerTime - elapsedTime;
             if (timerCounter < 0)
                 timerCounter = 0;
@@ -232,7 +198,7 @@ class MyRoom extends core_1.Room {
                     this.state.players.forEach(async (player) => {
                         players[players?.length] = { ...player, player: player };
                         const client = this.clients.getById(player.sessionId);
-                        console.log("player.playerId; ", player.playerId);
+                        // console.log("player.playerId; ", player.playerId);
                         const options = { accessToken: player?.accessToken, sessionId: player?.sessionId, walletId: player?.walletId, userId: player?.uid, ticket: player?.ticket, passCred: player?.passCred, playerId: player.playerId };
                         if (client) {
                             client.send("get-my-sessionId", { data: player?.sessionId });

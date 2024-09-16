@@ -53,7 +53,7 @@ class BattleRoom extends core_1.Room {
                     }
                     break;
                 case "game-over":
-                    console.log("gameover:", message);
+                    // console.log("gameover:", message);
                     // this.broadcast('game-over', { data: message });
                     this.gameOver(options, message?.playerId);
                     break;
@@ -61,11 +61,11 @@ class BattleRoom extends core_1.Room {
                     this.broadcast('game-event', { event: 'update-score', data: message.data });
                     break;
                 case "player-ready":
-                    console.log("player-ready:", message);
+                    // console.log("player-ready:", message);
                     this.broadcast('game-event', { event: 'player-ready', data: message });
                     break;
                 case "go-to-game":
-                    console.log("go-to-game:", message);
+                    // console.log("go-to-game:", message);
                     this.broadcast('game-event', { event: 'go-to-game', data: message.data });
                     break;
                 case "create-block":
@@ -131,7 +131,7 @@ class BattleRoom extends core_1.Room {
             console.log("battle syncTicketPayload:", syncTicketPayload?.data);
             client.send("updateMessage", { message: "Player Ready" });
             let _this = this;
-            console.log("_this.state.players.size: ", _this.state.players.size);
+            // console.log("_this.state.players.size: ", _this.state.players.size);
             setTimeout(function () {
                 _this.broadcast("setPlayerReady", { data: { playerId: _player?.playerId, walletId: _player?.walletId.substring(0, 10), totalPlayerCount: _this.state.players.size } });
             }, 1000);
@@ -183,7 +183,7 @@ class BattleRoom extends core_1.Room {
                 "extra": options.password ? { message: "this is private room. It is event data." } : {},
                 // "rewardTokenAmount": player?.playerNumber == winnerId ? 0.1 * this.state.players.size : 0,
             };
-            console.log("player?.playerId: ", player?.playerId);
+            // console.log("player?.playerId: ", player?.playerId);
             gameMessage[_ret.players.length] = {
                 "userId": player?.player?.userId,
                 "walletid": player?.player?.walletId,
