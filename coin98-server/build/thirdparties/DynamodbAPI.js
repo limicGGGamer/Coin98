@@ -7,8 +7,8 @@ exports.syncTicket = syncTicket;
 exports.userme = userme;
 exports.gameover = gameover;
 const axios_1 = __importDefault(require("axios"));
-let domain = "https://gameapiv2.gggamer.org";
-// let domain = "https://gametestapi.gggamer.org";
+// let domain = "https://gameapiv2.gggamer.org";
+let domain = "https://gametestapi.gggamer.org";
 async function syncTicket(auth_token, _data) {
     const config = {
         headers: {

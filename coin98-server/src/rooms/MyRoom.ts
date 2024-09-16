@@ -289,6 +289,9 @@ export class MyRoom extends Room<MyRoomState> {
           this.lock();
 
           this.battleRoom = battleRoom;
+          const lockPayload = await matchMaker.remoteRoomCall(battleRoom.roomId, "lockTheRoom", [{}]);
+          if (!lockPayload)
+              return;
 
 
           let players: any = [];

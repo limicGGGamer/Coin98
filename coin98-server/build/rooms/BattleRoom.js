@@ -215,5 +215,12 @@ class BattleRoom extends core_1.Room {
         });
         return true;
     }
+    async lockTheRoom() {
+        if (!this.locked) {
+            this.lock();
+            return true;
+        }
+        return false;
+    }
 }
 exports.BattleRoom = BattleRoom;

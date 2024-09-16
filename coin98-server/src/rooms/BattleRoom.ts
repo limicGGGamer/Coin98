@@ -3,7 +3,7 @@ import { MyRoomState } from "./schema/MyRoomState";
 import { syncTicket } from "../thirdparties/DynamodbAPI";
 
 export class BattleRoom extends Room<MyRoomState> {
-    maxClients = 4;
+    maxClients = 5;
     startedAt = 0;
     remoteRoomId: string = "";
     isGameover = false;
@@ -106,6 +106,11 @@ export class BattleRoom extends Room<MyRoomState> {
                 case "player-ready-counter":
                     // console.log("player-ready-counter:", message);
                     this.broadcast('game-event', { event: 'player-ready-counter', data: message });
+                    break;
+                case "game-timeout":
+                    console.log("Battle room waiting player timeout:", this.roomId);
+                    await matchMaker.remoteRoomCall(this.remoteRoomId, "closeRoom", [{ roomId: this.roomId }]);
+                    this.disconnect();
                     break;
             }
         })
@@ -259,5 +264,13 @@ export class BattleRoom extends Room<MyRoomState> {
         });
 
         return true;
+    }
+
+    async lockTheRoom() {
+        if (!this.locked) {
+            this.lock();
+            return true;
+        }
+        return false;
     }
 }

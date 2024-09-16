@@ -225,6 +225,9 @@ class MyRoom extends core_1.Room {
                 if (battleRoom) {
                     this.lock();
                     this.battleRoom = battleRoom;
+                    const lockPayload = await core_1.matchMaker.remoteRoomCall(battleRoom.roomId, "lockTheRoom", [{}]);
+                    if (!lockPayload)
+                        return;
                     let players = [];
                     this.state.players.forEach(async (player) => {
                         players[players?.length] = { ...player, player: player };
